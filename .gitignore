@@ -1,0 +1,4 @@
+.env
+.DS_Store
+.idea
+core/constants/secret_dicts.py
