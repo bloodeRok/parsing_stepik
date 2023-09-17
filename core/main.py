@@ -1,5 +1,6 @@
 import logging
 import traceback
+from datetime import datetime
 
 import schedule
 
@@ -11,6 +12,7 @@ def add_payments_to_google_table():
         run_time = GoogleTableHandler().put_all_payments_to_google_sheet()
         print("Success")
         print(f"Run time: {run_time}")
+        print(f"Current date and time: {datetime.now()}")
     except Exception:
         logging.error(traceback.format_exc())
         print("Something went wrong!")
