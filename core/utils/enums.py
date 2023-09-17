@@ -38,11 +38,10 @@ class Courses(Enum):
     ]
 
 
-class Columns(IntEnum):
-    amount = 2
-    course = 3
-    payment_date = 4
-    promo_code = 5
-    user = 6
-    user_name = 7
-    course_name = 8
+class GoogleSheet(IntEnum):
+    all_index = 0
+    ds_index = 1
+    analytics_index = 2
+    test_all_index = 3
+    test_ds_index = 4
+    test_analytics_index = 5

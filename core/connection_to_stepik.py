@@ -8,6 +8,7 @@ from core.constants.defaults import (
     STEPIK_CLIENT_ID,
     STEPIK_CLIENT_SECRET, AUTH_DATA
 )
+import pandas as pd
 from core.constants.urls import AUTH_URL, COURSE_PAGE_URL, USER_URL, COURSE_URL
 from core.exceptions import NotAcceptable, Unauthorized
 from core.utils.formatters import date_to_rus_format
@@ -62,59 +63,87 @@ class StepikConnect:
             self,
             course: int,
             page_num: int,
-            payments: list[dict[str, Any]]
-    ) -> bool:
+            course_payments: pd.DataFrame
+    ) -> [pd.DataFrame, bool]:
         response_json = requests.get(
             COURSE_PAGE_URL.format(course=course, page=page_num),
             headers=self.headers
         ).json()
 
-        all_payments = response_json.get("course-payments")
-        if not all_payments:
-            return False
+        page_payments = pd.DataFrame(
+            data=response_json.get("course-payments")
+        )
 
-        for payment in all_payments:
-            if payment["status"] == "success":
-                try:
-                    amount = int(float(payment["amount"]))
-                except TypeError:
-                    amount = ""
-                payments.append(
-                    {
-                        "amount": amount,
-                        "course": course,
-                        "payment_date": date_to_rus_format(
-                            date=payment["payment_date"]
-                        ),
-                        "promo_code": payment["promo_code"],
-                        "user": payment["user"],
-                        "user_name": self.__get_user_name(
-                            user_id=payment["user"]
-                        ),
-                        "course_name": self.__get_course_name(course_id=course)
-                    }
-                )
-                print(f"course({course}), page({page_num}): {payment}")
-        return response_json["meta"]["has_next"]
+        if page_payments.empty:
+            return course_payments, False
 
-    def get_payments(self, courses: Any) -> list[dict[str, Any]]:
+        page_payments = page_payments[
+            page_payments["status"] == "success"
+            ]
+        page_payments["user_name"] = [
+            self.__get_user_name(user_id=user_id)
+            for user_id in page_payments["user"]
+        ]
+        page_payments["course_name"] = [
+            self.__get_course_name(course_id=course_id)
+            for course_id in page_payments["course"]
+        ]
+        page_payments["date"] = [
+            date_to_rus_format(date=payment_date)
+            for payment_date in page_payments["payment_date"]
+        ]
+        page_payments["promo_code"] = [
+            promo if promo else ""
+            for promo in page_payments["promo_code"]
+        ]
+
+        page_payments = page_payments[[
+            "amount",
+            "course",
+            "course_name",
+            "date",
+            "promo_code",
+            "user",
+            "user_name",
+            "payment_date",
+        ]].rename(
+            columns={
+                "amount": "Цена",
+                "course": "ID курса",
+                "course_name": "Имя курса",
+                "date": "Дата покупки",
+                "promo_code": "Промокод",
+                "user": "ID пользователя",
+                "user_name": "Имя пользователя",
+                "payment_date": "Точная дата и время покупки",
+            }
+        )
+
+        course_payments = pd.concat(
+            [course_payments, page_payments],
+            ignore_index=True,
+        )
+
+        return course_payments, response_json["meta"]["has_next"]
+
+    def get_payments(self, courses: Any) -> pd.DataFrame:
         """
         TODO -> + docstring
         :param courses:
         :return:
         """
 
-        payments = []
-        start_date = datetime.now()
+        course_payments = pd.DataFrame()
         for course in courses:
             page_num = 0
             has_next = True
             while has_next:
                 page_num += 1
-                has_next = self.__add_payments_from_page(
+                print(f"course: {course}, page: {page_num}")
+                course_payments, has_next = self.__add_payments_from_page(
                     course=course,
                     page_num=page_num,
-                    payments=payments
+                    course_payments=course_payments
                 )
 
-        return payments
+        return course_payments.sort_values(by=["Точная дата и время покупки"])
