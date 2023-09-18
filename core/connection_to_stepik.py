@@ -4,14 +4,14 @@ from typing import Any
 import requests
 from requests.auth import HTTPBasicAuth
 
-from core.constants.defaults import (
+from constants.defaults import (
     STEPIK_CLIENT_ID,
     STEPIK_CLIENT_SECRET, AUTH_DATA
 )
 import pandas as pd
-from core.constants.urls import AUTH_URL, COURSE_PAGE_URL, USER_URL, COURSE_URL
-from core.exceptions import NotAcceptable, Unauthorized
-from core.utils.formatters import date_to_rus_format
+from constants.urls import AUTH_URL, COURSE_PAGE_URL, USER_URL, COURSE_URL
+from exceptions import NotAcceptable, Unauthorized
+from utils.formatters import date_to_rus_format
 
 
 class StepikConnect:

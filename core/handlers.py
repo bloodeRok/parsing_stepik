@@ -4,9 +4,9 @@ import gspread
 import pandas as pd
 from gspread_dataframe import set_with_dataframe
 
-from core.connection_to_stepik import StepikConnect
-from core.constants.defaults import GOOGLE_SHEET_CREDENTIALS, GOOGLE_SHEET_ID
-from core.utils.enums import Courses, GoogleSheet
+from connection_to_stepik import StepikConnect
+from constants.defaults import GOOGLE_SHEET_CREDENTIALS, GOOGLE_SHEET_ID
+from utils.enums import Courses, GoogleSheet
 
 stepik_connection = StepikConnect()
 
@@ -38,13 +38,13 @@ class GoogleTableHandler:
         payments = self.__get_all_payments_data()
 
         test_all_sheet = self.google_table.get_worksheet(
-            index=GoogleSheet.test_all_index.value
+            index=GoogleSheet.all_index.value
         )
         test_ds_sheet = self.google_table.get_worksheet(
-            index=GoogleSheet.test_ds_index.value
+            index=GoogleSheet.ds_index.value
         )
         test_analytics_sheet = self.google_table.get_worksheet(
-            index=GoogleSheet.test_analytics_index.value
+            index=GoogleSheet.analytics_index.value
         )
 
         all_payments = pd.concat(
