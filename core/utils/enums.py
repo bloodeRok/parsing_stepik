@@ -42,6 +42,3 @@ class GoogleSheet(IntEnum):
     all_index = 0
     ds_index = 1
     analytics_index = 2
-    test_all_index = 3
-    test_ds_index = 4
-    test_analytics_index = 5
